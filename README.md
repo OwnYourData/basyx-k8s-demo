@@ -124,7 +124,7 @@ demonstrating how standardized digital twins can be hosted, managed, and integra
 
 ## About  
 
-Supported in the course of the [PACE-DPP project](https://dpp-austria.at/) by the Austrian Federal Ministry for Climate Action, Environment, Energy, Mobility, Innovation and Technology (BMK), supported by the Austrian Research Promotion Agency (FFG funded project #917177), as well as from the German Federal Ministry for Economic Affairs and Climate Action (BMWK), supported by the German Research Promotion Agency (DLR-PT).<img align="left" src="https://raw.githubusercontent.com/OwnYourData/basyx-k8s-demo/main/res/BMIMI_Logo_srgb.png" height="150">
+<img align="right" src="https://raw.githubusercontent.com/OwnYourData/basyx-k8s-demo/main/res/BMIMI_Logo_srgb.png" height="90">Supported in the course of the [PACE-DPP project](https://dpp-austria.at/) by the Austrian Federal Ministry for Climate Action, Environment, Energy, Mobility, Innovation and Technology (BMK), supported by the Austrian Research Promotion Agency (FFG funded project #917177), as well as from the German Federal Ministry for Economic Affairs and Climate Action (BMWK), supported by the German Research Promotion Agency (DLR-PT).
 
 <br clear="both" />
 
