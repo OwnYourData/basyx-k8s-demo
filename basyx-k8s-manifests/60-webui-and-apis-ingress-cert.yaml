@@ -1,0 +1,170 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basyx-webui
+  namespace: basyx
+  labels:
+    app: basyx-webui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: basyx-webui
+  template:
+    metadata:
+      labels:
+        app: basyx-webui
+    spec:
+      containers:
+        - name: webui
+          image: eclipsebasyx/aas-gui:SNAPSHOT
+          ports:
+            - name: http
+              containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          env:
+            - name: AAS_ENV_URL
+              value: https://basyx.data-container.net/aas-env
+            - name: AAS_REGISTRY_URL
+              value: https://basyx.data-container.net/registry
+            - name: SUBMODEL_REGISTRY_URL
+              value: https://basyx.data-container.net/sm-registry
+            - name: DASHBOARD_API_URL
+              value: https://basyx.data-container.net/dashboard
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: basyx-webui
+  namespace: basyx
+spec:
+  selector:
+    app: basyx-webui
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: basyx-webui-ingress
+  namespace: basyx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - basyx.data-container.net
+      secretName: basyx-tls
+  rules:
+    - host: basyx.data-container.net
+      http:
+        paths:
+          - path: /dashboard/swagger-ui/
+            pathType: Prefix
+            backend:
+              service:
+                name: oas-proxy
+                port:
+                  number: 8080
+          - path: /dashboard/v3/api-docs
+            pathType: Prefix
+            backend:
+              service:
+                name: oas-proxy
+                port:
+                  number: 8080
+          - path: /dashboard
+            pathType: Prefix
+            backend:
+              service:
+                name: dashboard-api
+                port:
+                  number: 8085
+
+          - path: /aas-env/swagger-ui/
+            pathType: Prefix
+            backend:
+              service:
+                name: oas-proxy
+                port:
+                  number: 8080
+          - path: /aas-env/v3/api-docs
+            pathType: Prefix
+            backend:
+              service:
+                name: oas-proxy
+                port:
+                  number: 8080
+          - path: /aas-env
+            pathType: Prefix
+            backend:
+              service:
+                name: oas-proxy
+                port:
+                  number: 8080
+          - path: /registry/swagger-ui/
+            pathType: Prefix
+            backend:
+              service: { name: oas-proxy, port: { number: 8080 } }
+          - path: /registry/v3/api-docs
+            pathType: Prefix
+            backend:
+              service: { name: oas-proxy, port: { number: 8080 } }
+          - path: /registry
+            pathType: Prefix
+            backend:
+              service: { name: oas-proxy, port: { number: 8080 } }
+          - path: /sm-registry/swagger-ui/
+            pathType: Prefix
+            backend: { service: { name: oas-proxy, port: { number: 8080 } } }
+          - path: /sm-registry/v3/api-docs
+            pathType: Prefix
+            backend: { service: { name: oas-proxy, port: { number: 8080 } } }
+          - path: /sm-registry
+            pathType: Prefix
+            backend: { service: { name: oas-proxy, port: { number: 8080 } } }
+
+
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: basyx-webui
+                port:
+                  number: 80
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: basyx-tls
+  namespace: basyx
+spec:
+  secretName: basyx-tls
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  dnsNames:
+    - basyx.data-container.net
+  privateKey:
+    rotationPolicy: Always

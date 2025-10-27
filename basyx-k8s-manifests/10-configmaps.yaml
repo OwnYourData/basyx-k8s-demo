@@ -1,0 +1,401 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: basyx-aas-env-config
+  namespace: basyx
+data:
+  application.properties: |
+    server.port=8081
+    # Context path & Forwarded headers
+    server.servlet.context-path=/aas-env
+    server.forward-headers-strategy=framework
+
+    basyx.backend=MongoDB
+    basyx.environment=file:aas/data
+    basyx.cors.allowed-origins=*
+    basyx.cors.allowed-methods=GET,POST,PATCH,DELETE,PUT,OPTIONS,HEAD
+    basyx.aasrepository.feature.registryintegration=https://basyx.data-container.net/registry
+    basyx.submodelrepository.feature.registryintegration=https://basyx.data-container.net/sm-registry
+    basyx.externalurl=https://basyx.data-container.net/aas-env
+
+    spring.servlet.multipart.max-file-size=500MB
+    spring.servlet.multipart.max-request-size=500MB
+
+    spring.data.mongodb.host=mongo.basyx.svc.cluster.local
+    spring.data.mongodb.database=aas-env
+    spring.data.mongodb.authentication-database=admin
+    spring.data.mongodb.username=${MONGO_USERNAME}
+    spring.data.mongodb.password=${MONGO_PASSWORD}
+
+    # >>> Swagger / OpenAPI korrekt auf Context-Path zeigen
+    springdoc.api-docs.path=/v3/api-docs
+    springdoc.swagger-ui.config-url=/aas-env/v3/api-docs/swagger-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: basyx-aas-registry-config
+  namespace: basyx
+data:
+  application.yml: |
+    server:
+      servlet:
+        context-path: /registry
+      forward-headers-strategy: framework
+
+    basyx:
+      cors:
+        allowed-origins: '*'
+        allowed-methods: GET,POST,PATCH,DELETE,PUT,OPTIONS,HEAD
+
+    spring:
+      data:
+        mongodb:
+          uri: "mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo.basyx.svc.cluster.local:27017/?authSource=admin"
+
+    # >>> Swagger / OpenAPI korrekt auf Context-Path zeigen
+    springdoc:
+      api-docs:
+        path: /v3/api-docs
+      swagger-ui:
+        config-url: /registry/v3/api-docs/swagger-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: basyx-sm-registry-config
+  namespace: basyx
+data:
+  application.yml: |
+    server:
+      servlet:
+        context-path: /sm-registry
+      forward-headers-strategy: framework
+
+    basyx:
+      cors:
+        allowed-origins: '*'
+        allowed-methods: GET,POST,PATCH,DELETE,PUT,OPTIONS,HEAD
+
+    spring:
+      data:
+        mongodb:
+          uri: "mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo.basyx.svc.cluster.local:27017/?authSource=admin"
+
+    # >>> Swagger / OpenAPI korrekt auf Context-Path zeigen
+    springdoc:
+      api-docs:
+        path: /v3/api-docs
+      swagger-ui:
+        config-url: /sm-registry/v3/api-docs/swagger-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: basyx-dashboard-api-config
+  namespace: basyx
+data:
+  application.yml: |
+    server:
+      port: '8085'
+      servlet:
+        context-path: /dashboard
+      forward-headers-strategy: framework
+
+    spring:
+      data:
+        mongodb:
+          host: mongo.basyx.svc.cluster.local
+          database: aas-dashboard
+          authentication-database: admin
+          username: ${MONGO_USERNAME}
+          password: ${MONGO_PASSWORD}
+
+    basyx:
+      cors:
+        allowed-origins: '*'
+        allowed-methods: GET,POST,PATCH,DELETE,PUT,OPTIONS,HEAD
+      externalurl: https://basyx.data-container.net/dashboard
+
+    # >>> Swagger / OpenAPI korrekt auf Context-Path zeigen
+    springdoc:
+      api-docs:
+        path: /v3/api-docs
+      swagger-ui:
+        config-url: /dashboard/v3/api-docs/swagger-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oas-proxy-nginx
+  namespace: basyx
+data:
+  nginx.conf: |
+    events {}
+    http {
+      proxy_buffering off;
+
+      server {
+        listen 8080;
+        absolute_redirect off;
+        port_in_redirect off;
+
+        # ===== Dashboard (/dashboard) – unverändert, da bei dir OK =====
+        location = /dashboard/v3/api-docs {
+          proxy_set_header Host $host;
+          proxy_pass http://dashboard-api.basyx.svc.cluster.local:8085/dashboard/v3/api-docs;
+
+          sub_filter_types application/json;
+          sub_filter_once on;
+          sub_filter '"servers":[{"url":"/","description":"Default Server URL"}],' '';
+          sub_filter '"servers":[{"url":"/"}],' '';
+          sub_filter '"openapi"' '"servers":[{"url":"/dashboard"}],"openapi"';
+          proxy_hide_header Content-Length;
+        }
+
+        location = /dashboard/v3/api-docs/swagger-config {
+          proxy_set_header Host $host;
+          proxy_pass http://dashboard-api.basyx.svc.cluster.local:8085/dashboard/v3/api-docs/swagger-config;
+
+          sub_filter_types application/json;
+          sub_filter_once on;
+          sub_filter '"/v3/api-docs"' '"/dashboard/v3/api-docs"';
+          proxy_hide_header Content-Length;
+        }
+
+        location = /dashboard/swagger-ui/swagger-initializer.js {
+          proxy_set_header Host $host;
+          proxy_pass http://dashboard-api.basyx.svc.cluster.local:8085/dashboard/swagger-ui/swagger-initializer.js;
+
+          sub_filter_once off;
+          sub_filter_types application/javascript application/x-javascript text/javascript;
+          sub_filter '"/v3/api-docs/swagger-config"' '"/dashboard/v3/api-docs/swagger-config"';
+          sub_filter '"configUrl" : "/v3/api-docs/swagger-config"' '"configUrl" : "/dashboard/v3/api-docs/swagger-config"';
+          sub_filter '"configUrl":"/v3/api-docs/swagger-config"'  '"configUrl":"/dashboard/v3/api-docs/swagger-config"';
+          sub_filter 'https://petstore.swagger.io/v2/swagger.json' '/dashboard/v3/api-docs';
+          sub_filter 'url: "https://petstore.swagger.io/v2/swagger.json"' 'url: "/dashboard/v3/api-docs"';
+          sub_filter '"url":"https://petstore.swagger.io/v2/swagger.json"' '"url":"/dashboard/v3/api-docs"';
+          proxy_hide_header Content-Length;
+        }
+
+        location ^~ /dashboard/swagger-ui/ {
+          proxy_set_header Host $host;
+          proxy_pass http://dashboard-api.basyx.svc.cluster.local:8085/dashboard/swagger-ui/;
+        }
+
+        # ===== AAS-Env (/aas-env) =====
+
+        # --- AAS-Env OpenAPI JSON (KEIN Einfügen mehr, nur Ersetzen falls "/"-Server) ---
+        location = /aas-env/v3/api-docs {
+          proxy_set_header Host $host;
+          # ohne Präfix an den Pod senden
+          proxy_pass http://aas-env.basyx.svc.cluster.local:8081/v3/api-docs;
+
+          sub_filter_types application/json;
+          sub_filter_once off;
+
+          # Ersetze bekannte "/"-Varianten nach "/aas-env" (falls vorhanden)
+          sub_filter '"servers":[{"url":"/","description":"Default Server URL"}]'  '"servers":[{"url":"/aas-env","description":"Default Server URL"}]';
+          sub_filter '"servers":[{"url":"/","description":"Generated server url"}]' '"servers":[{"url":"/aas-env","description":"Generated server url"}]';
+          sub_filter '"servers":[{"url":"/"}]'                                      '"servers":[{"url":"/aas-env"}]';
+
+          # WICHTIG: keine Injection von ,"servers":[...] mehr!
+          proxy_hide_header Content-Length;
+        }
+
+        # --- AAS-Env Swagger-Config (nur die URL auf den Präfix biegen) ---
+        location = /aas-env/v3/api-docs/swagger-config {
+          proxy_set_header Host $host;
+          proxy_pass http://aas-env.basyx.svc.cluster.local:8081/v3/api-docs/swagger-config;
+
+          sub_filter_types application/json;
+          sub_filter_once on;
+          sub_filter '"/v3/api-docs"' '"/aas-env/v3/api-docs"';
+
+          proxy_hide_header Content-Length;
+        }
+
+        # --- AAS-Env Swagger-UI Initializer (Petstore -> /aas-env/v3/api-docs) ---
+        location = /aas-env/swagger-ui/swagger-initializer.js {
+          proxy_set_header Host $host;
+          # UI liegt im Pod unter /swagger-ui (OHNE Präfix)
+          proxy_pass http://aas-env.basyx.svc.cluster.local:8081/swagger-ui/swagger-initializer.js;
+
+          sub_filter_once off;
+          sub_filter_types application/javascript application/x-javascript text/javascript;
+
+          sub_filter '"/v3/api-docs/swagger-config"'                 '"/aas-env/v3/api-docs/swagger-config"';
+          sub_filter '"configUrl" : "/v3/api-docs/swagger-config"'   '"configUrl" : "/aas-env/v3/api-docs/swagger-config"';
+          sub_filter '"configUrl":"/v3/api-docs/swagger-config"'     '"configUrl":"/aas-env/v3/api-docs/swagger-config"';
+
+          sub_filter 'https://petstore.swagger.io/v2/swagger.json'   '/aas-env/v3/api-docs';
+          sub_filter 'url: "https://petstore.swagger.io/v2/swagger.json"' 'url: "/aas-env/v3/api-docs"';
+          sub_filter '"url":"https://petstore.swagger.io/v2/swagger.json"' '"url":"/aas-env/v3/api-docs"';
+
+          proxy_hide_header Content-Length;
+        }
+
+        # --- AAS-Env UI-Assets (ohne Präfix weiterreichen) ---
+        location ^~ /aas-env/swagger-ui/ {
+          proxy_set_header Host $host;
+          proxy_pass http://aas-env.basyx.svc.cluster.local:8081/swagger-ui/;
+        }
+
+        # --- Beschreibung: erzwinge JSON-Antwort ---
+        location = /aas-env/v3/description {
+          proxy_set_header Host $host;
+          proxy_set_header Accept application/json;
+          proxy_pass http://aas-env.basyx.svc.cluster.local:8081/description;
+        }
+
+        # --- Allgemeiner Strip: /aas-env/... -> http://aas-env:8081/... ---
+        location ^~ /aas-env/ {
+          proxy_set_header Host $host;
+          proxy_pass http://aas-env.basyx.svc.cluster.local:8081/;
+        }
+
+        # ===== Registry: Redirects für Komfort =====
+        location = /registry {
+          return 302 /registry/swagger-ui/index.html;
+        }
+        location = /registry/ {
+          return 302 /registry/swagger-ui/index.html;
+        }
+
+        # ===== Registry: OpenAPI JSON (ohne Präfix an Pod) =====
+
+        location = /registry/v3/api-docs {
+          proxy_set_header Host $host;
+          # Upstream ohne Prefix ansprechen
+          proxy_pass http://aas-registry.basyx.svc.cluster.local:8080/v3/api-docs;
+
+          sub_filter_types application/json;
+          # Mehrere Ersetzungen zulassen (wichtig!)
+          sub_filter_once off;
+
+          # 1) Vorhandene "servers" neutralisieren -> gültige OAS-Extension statt entfernen
+          #    Verhindert doppelte "servers" Keys (Parserfehler).
+          sub_filter '"servers":' '"x-servers-removed":';
+
+          # 2) Gewünschten servers-Block direkt nach "openapi" injizieren
+          sub_filter '"openapi"' '"servers":[{"url":"/registry"}],"openapi"';
+
+          proxy_hide_header Content-Length;
+        }
+
+        # Registry: Swagger-Config (URL auf Präfix biegen)
+        location = /registry/v3/api-docs/swagger-config {
+          proxy_set_header Host $host;
+          proxy_pass http://aas-registry.basyx.svc.cluster.local:8080/v3/api-docs/swagger-config;
+
+          sub_filter_types application/json;
+          sub_filter_once on;
+          sub_filter '"/v3/api-docs"' '"/registry/v3/api-docs"';
+
+          proxy_hide_header Content-Length;
+        }
+
+        # Registry: Swagger-UI Initializer – Petstore -> /registry/v3/api-docs
+        location = /registry/swagger-ui/swagger-initializer.js {
+          proxy_set_header Host $host;
+          # Viele Registry-Builds liefern UI unter /swagger-ui (OHNE Context-Pfad)
+          proxy_pass http://aas-registry.basyx.svc.cluster.local:8080/swagger-ui/swagger-initializer.js;
+
+          sub_filter_once off;
+          sub_filter_types application/javascript application/x-javascript text/javascript;
+
+          sub_filter '"/v3/api-docs/swagger-config"'               '"/registry/v3/api-docs/swagger-config"';
+          sub_filter '"configUrl" : "/v3/api-docs/swagger-config"' '"configUrl" : "/registry/v3/api-docs/swagger-config"';
+          sub_filter '"configUrl":"/v3/api-docs/swagger-config"'   '"configUrl":"/registry/v3/api-docs/swagger-config"';
+
+          sub_filter 'https://petstore.swagger.io/v2/swagger.json' '/registry/v3/api-docs';
+          sub_filter 'url: "https://petstore.swagger.io/v2/swagger.json"' 'url: "/registry/v3/api-docs"';
+          sub_filter '"url":"https://petstore.swagger.io/v2/swagger.json"' '"url":"/registry/v3/api-docs"';
+
+          proxy_hide_header Content-Length;
+        }
+
+        # Registry: übrige UI-Assets (OHNE Präfix an Pod)
+        location ^~ /registry/swagger-ui/ {
+          proxy_set_header Host $host;
+          proxy_pass http://aas-registry.basyx.svc.cluster.local:8080/swagger-ui/;
+        }
+
+        # Registry: allgemeiner Strip – API & sonstiges
+        # /registry/... -> http://aas-registry:8080/...
+        location ^~ /registry/ {
+          proxy_set_header Host $host;
+          proxy_pass http://aas-registry.basyx.svc.cluster.local:8080/;
+        }
+
+        # ===== Submodel Registry: Komfort-Redirects =====
+        location = /sm-registry {
+          return 302 /sm-registry/swagger-ui/index.html;
+        }
+        location = /sm-registry/ {
+          return 302 /sm-registry/swagger-ui/index.html;
+        }
+
+        # ===== Submodel Registry: OpenAPI JSON (ohne Präfix an Pod) =====
+        location = /sm-registry/v3/api-docs {
+          proxy_set_header Host $host;
+          proxy_pass http://sm-registry.basyx.svc.cluster.local:8080/v3/api-docs;
+
+          sub_filter_types application/json;
+          sub_filter_once off;
+
+          # 1) vorhandene servers neutralisieren (keine doppelten Keys)
+          sub_filter '"servers":' '"x-servers-removed":';
+          # 2) gewünschten servers-Block injizieren
+          sub_filter '"openapi"' '"servers":[{"url":"/sm-registry"}],"openapi"';
+
+          proxy_hide_header Content-Length;
+        }
+
+        # Submodel Registry: Swagger-Config (URL auf Präfix biegen)
+        location = /sm-registry/v3/api-docs/swagger-config {
+          proxy_set_header Host $host;
+          proxy_pass http://sm-registry.basyx.svc.cluster.local:8080/v3/api-docs/swagger-config;
+
+          sub_filter_types application/json;
+          sub_filter_once on;
+          sub_filter '"/v3/api-docs"' '"/sm-registry/v3/api-docs"';
+
+          proxy_hide_header Content-Length;
+        }
+
+        # Submodel Registry: Swagger-UI Initializer – Petstore -> /sm-registry/v3/api-docs
+        location = /sm-registry/swagger-ui/swagger-initializer.js {
+          proxy_set_header Host $host;
+          # viele Images liefern UI unter /swagger-ui (OHNE Context-Pfad)
+          proxy_pass http://sm-registry.basyx.svc.cluster.local:8080/swagger-ui/swagger-initializer.js;
+
+          sub_filter_once off;
+          sub_filter_types application/javascript application/x-javascript text/javascript;
+
+          sub_filter '"/v3/api-docs/swagger-config"'               '"/sm-registry/v3/api-docs/swagger-config"';
+          sub_filter '"configUrl" : "/v3/api-docs/swagger-config"' '"configUrl" : "/sm-registry/v3/api-docs/swagger-config"';
+          sub_filter '"configUrl":"/v3/api-docs/swagger-config"'   '"configUrl":"/sm-registry/v3/api-docs/swagger-config"';
+
+          sub_filter 'https://petstore.swagger.io/v2/swagger.json' '/sm-registry/v3/api-docs';
+          sub_filter 'url: "https://petstore.swagger.io/v2/swagger.json"' 'url: "/sm-registry/v3/api-docs"';
+          sub_filter '"url":"https://petstore.swagger.io/v2/swagger.json"' '"url":"/sm-registry/v3/api-docs"';
+
+          proxy_hide_header Content-Length;
+        }
+
+        # Submodel Registry: übrige UI-Assets (OHNE Präfix an Pod)
+        location ^~ /sm-registry/swagger-ui/ {
+          proxy_set_header Host $host;
+          proxy_pass http://sm-registry.basyx.svc.cluster.local:8080/swagger-ui/;
+        }
+
+        # Submodel Registry: allgemeiner Strip – API & sonstiges
+        # /sm-registry/... -> http://sm-registry:8080/...
+        location ^~ /sm-registry/ {
+          proxy_set_header Host $host;
+          proxy_pass http://sm-registry.basyx.svc.cluster.local:8080/;
+        }
+
+      }
+    }
