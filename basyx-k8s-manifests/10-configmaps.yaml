@@ -194,12 +194,13 @@ data:
           sub_filter_types application/json;
           sub_filter_once off;
 
-          # Ersetze bekannte "/"-Varianten nach "/aas-env" (falls vorhanden)
-          sub_filter '"servers":[{"url":"/","description":"Default Server URL"}]'  '"servers":[{"url":"/aas-env","description":"Default Server URL"}]';
-          sub_filter '"servers":[{"url":"/","description":"Generated server url"}]' '"servers":[{"url":"/aas-env","description":"Generated server url"}]';
-          sub_filter '"servers":[{"url":"/"}]'                                      '"servers":[{"url":"/aas-env"}]';
+          # 1) Vorhandene "servers" neutralisieren -> gültige OAS-Extension statt entfernen
+          #    Verhindert doppelte "servers" Keys (Parserfehler).
+          sub_filter '"servers":' '"x-servers-removed":';
 
-          # WICHTIG: keine Injection von ,"servers":[...] mehr!
+          # 2) Gewünschten servers-Block direkt nach "openapi" injizieren
+          sub_filter '"openapi"' '"servers":[{"url":"/aas-env"}],"openapi"';
+
           proxy_hide_header Content-Length;
         }
 

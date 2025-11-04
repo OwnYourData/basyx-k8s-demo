@@ -38,13 +38,13 @@ spec:
             timeoutSeconds: 2
             failureThreshold: 3
           env:
-            - name: AAS_ENV_URL
+            - name: AAS_ENV_PATH
               value: https://basyx.data-container.net/aas-env
-            - name: AAS_REGISTRY_URL
-              value: https://basyx.data-container.net/registry
-            - name: SUBMODEL_REGISTRY_URL
-              value: https://basyx.data-container.net/sm-registry
-            - name: DASHBOARD_API_URL
+            - name: AAS_REGISTRY_PATH
+              value: /registry
+            - name: SUBMODEL_REGISTRY_PATH
+              value: /sm-registry
+            - name: DASHBOARD_API_PATH
               value: https://basyx.data-container.net/dashboard
 ---
 apiVersion: v1

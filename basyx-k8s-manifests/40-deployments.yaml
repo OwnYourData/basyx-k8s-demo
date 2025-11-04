@@ -196,6 +196,9 @@ spec:
               mountPath: /application/aas
       containers:
         - name: aas-env
+          envFrom:
+            - secretRef:
+                name: basyx-mongo-secret        
           env:
             - name: MONGO_USERNAME
               valueFrom:
