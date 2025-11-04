@@ -1,0 +1,564 @@
+{
+  "assetAdministrationShells": [
+    {
+      "modelType": "AssetAdministrationShell",
+      "id": "https://basyx.data-container.net/ids/aas/led-lamp-demo-2025-11-04",
+      "idShort": "LED_Lamp_Demo",
+      "administration": {
+        "version": "1",
+        "revision": "0"
+      },
+      "assetInformation": {
+        "assetKind": "Instance",
+        "globalAssetId": "https://basyx.data-container.net/ids/asset/led-lamp-2025-11-04"
+      },
+      "submodels": [
+        {
+          "type": "ModelReference",
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://basyx.data-container.net/ids/sm/nameplate-2025-11-04"
+            }
+          ]
+        },
+        {
+          "type": "ModelReference",
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://basyx.data-container.net/ids/sm/technical-data-2025-11-04"
+            }
+          ]
+        },
+        {
+          "type": "ModelReference",
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://basyx.data-container.net/ids/sm/compliance-2025-11-04"
+            }
+          ]
+        },
+        {
+          "type": "ModelReference",
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://basyx.data-container.net/ids/sm/lifecycle-2025-11-04"
+            }
+          ]
+        },
+        {
+          "type": "ModelReference",
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://basyx.data-container.net/ids/sm/environmental-footprint-2025-11-04"
+            }
+          ]
+        },
+        {
+          "type": "ModelReference",
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://basyx.data-container.net/ids/sm/material-composition-2025-11-04"
+            }
+          ]
+        },
+        {
+          "type": "ModelReference",
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://basyx.data-container.net/ids/sm/documentation-2025-11-04"
+            }
+          ]
+        },
+        {
+          "type": "ModelReference",
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://basyx.data-container.net/ids/sm/measurements-2025-11-04"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "submodels": [
+    {
+      "modelType": "Submodel",
+      "id": "https://basyx.data-container.net/ids/sm/nameplate-2025-11-04",
+      "idShort": "Nameplate",
+      "kind": "Instance",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/idta/nameplate/3/0/Nameplate"
+          }
+        ]
+      },
+      "submodelElements": [
+        {
+          "modelType": "Property",
+          "idShort": "ManufacturerName",
+          "valueType": "xs:string",
+          "value": "Siemens Lighting GmbH"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "ManufacturerProductType",
+          "valueType": "xs:string",
+          "value": "LED-LAMP-XYZ"
+        },
+        {
+          "modelType": "MultiLanguageProperty",
+          "idShort": "MarketingName",
+          "value": [
+            {
+              "language": "en",
+              "text": "LED Lamp Pro"
+            },
+            {
+              "language": "de",
+              "text": "LED Lampe Pro"
+            }
+          ]
+        },
+        {
+          "modelType": "Property",
+          "idShort": "ProductWebsite",
+          "valueType": "xs:anyURI",
+          "value": "https://basyx.data-container.net/products/led-lamp-pro"
+        }
+      ]
+    },
+    {
+      "modelType": "Submodel",
+      "id": "https://basyx.data-container.net/ids/sm/technical-data-2025-11-04",
+      "idShort": "TechnicalData",
+      "kind": "Instance",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/idta/TechnicalData/3/0/TechnicalData"
+          }
+        ]
+      },
+      "submodelElements": [
+        {
+          "modelType": "Property",
+          "idShort": "RatedPower",
+          "valueType": "xs:double",
+          "value": "9.5",
+          "qualifiers": [
+            {
+              "type": "unit",
+              "valueType": "xs:string",
+              "value": "W"
+            }
+          ]
+        },
+        {
+          "modelType": "Property",
+          "idShort": "LuminousFlux",
+          "valueType": "xs:double",
+          "value": "806",
+          "qualifiers": [
+            {
+              "type": "unit",
+              "valueType": "xs:string",
+              "value": "lm"
+            }
+          ]
+        },
+        {
+          "modelType": "Property",
+          "idShort": "ColorTemperature",
+          "valueType": "xs:integer",
+          "value": "2700",
+          "qualifiers": [
+            {
+              "type": "unit",
+              "valueType": "xs:string",
+              "value": "K"
+            }
+          ]
+        },
+        {
+          "modelType": "Range",
+          "idShort": "OperatingTemperature",
+          "valueType": "xs:double",
+          "min": "-20",
+          "max": "40",
+          "qualifiers": [
+            {
+              "type": "unit",
+              "valueType": "xs:string",
+              "value": "°C"
+            }
+          ]
+        },
+        {
+          "modelType": "Property",
+          "idShort": "StandbyPower",
+          "valueType": "xs:double",
+          "value": "0.50",
+          "qualifiers": [
+            {
+              "type": "note",
+              "valueType": "xs:string",
+              "value": "typical"
+            }
+          ]
+        },
+        {
+          "modelType": "ReferenceElement",
+          "idShort": "DocumentationRef",
+          "value": {
+            "type": "ModelReference",
+            "keys": [
+              {
+                "type": "Submodel",
+                "value": "https://basyx.data-container.net/ids/sm/documentation-2025-11-04"
+              }
+            ]
+          }
+        },
+        {
+          "modelType": "RelationshipElement",
+          "idShort": "CompliesWith",
+          "first": {
+            "type": "ModelReference",
+            "keys": [
+              {
+                "type": "Submodel",
+                "value": "https://basyx.data-container.net/ids/sm/technical-data-2025-11-04"
+              }
+            ]
+          },
+          "second": {
+            "type": "ModelReference",
+            "keys": [
+              {
+                "type": "Submodel",
+                "value": "https://basyx.data-container.net/ids/sm/compliance-2025-11-04"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "modelType": "Submodel",
+      "id": "https://basyx.data-container.net/ids/sm/compliance-2025-11-04",
+      "idShort": "Compliance",
+      "kind": "Instance",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://example.org/ids/compliance"
+          }
+        ]
+      },
+      "submodelElements": [
+        {
+          "modelType": "Property",
+          "idShort": "CE",
+          "valueType": "xs:boolean",
+          "value": "true"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "RoHS",
+          "valueType": "xs:boolean",
+          "value": "true"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "WEEE",
+          "valueType": "xs:boolean",
+          "value": "true"
+        },
+        {
+          "modelType": "File",
+          "idShort": "DeclarationOfConformity",
+          "contentType": "application/pdf",
+          "value": "https://basyx.data-container.net/files/declaration-of-conformity.pdf"
+        }
+      ]
+    },
+    {
+      "modelType": "Submodel",
+      "id": "https://basyx.data-container.net/ids/sm/lifecycle-2025-11-04",
+      "idShort": "Lifecycle",
+      "kind": "Instance",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://example.org/ids/lifecycle"
+          }
+        ]
+      },
+      "submodelElements": [
+        {
+          "modelType": "Property",
+          "idShort": "WarrantyMonths",
+          "valueType": "xs:integer",
+          "value": "36"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "RatedLifetimeHours",
+          "valueType": "xs:integer",
+          "value": "15000"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "FirstUseDate",
+          "valueType": "xs:dateTime",
+          "value": "2025-11-04T00:00:00Z"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "ServiceContactUrl",
+          "valueType": "xs:anyURI",
+          "value": "https://basyx.data-container.net/support"
+        }
+      ]
+    },
+    {
+      "modelType": "Submodel",
+      "id": "https://basyx.data-container.net/ids/sm/environmental-footprint-2025-11-04",
+      "idShort": "EnvironmentalFootprint",
+      "kind": "Instance",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://example.org/ids/environmental-footprint"
+          }
+        ]
+      },
+      "submodelElements": [
+        {
+          "modelType": "Property",
+          "idShort": "EnergyEfficiencyClass",
+          "valueType": "xs:string",
+          "value": "A+"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "AnnualEnergyConsumption_kWh",
+          "valueType": "xs:double",
+          "value": "5.2"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "CO2e_kg",
+          "valueType": "xs:double",
+          "value": "2.8"
+        }
+      ]
+    },
+    {
+      "modelType": "Submodel",
+      "id": "https://basyx.data-container.net/ids/sm/material-composition-2025-11-04",
+      "idShort": "MaterialComposition",
+      "kind": "Instance",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://example.org/ids/material-composition"
+          }
+        ]
+      },
+      "submodelElements": [
+        {
+          "modelType": "SubmodelElementCollection",
+          "idShort": "BillOfMaterials",
+          "value": [
+            {
+              "modelType": "SubmodelElementCollection",
+              "idShort": "Item1",
+              "value": [
+                {
+                  "modelType": "Property",
+                  "idShort": "Name",
+                  "valueType": "xs:string",
+                  "value": "LED Driver"
+                },
+                {
+                  "modelType": "Property",
+                  "idShort": "Mass_g",
+                  "valueType": "xs:double",
+                  "value": "12.0"
+                }
+              ]
+            },
+            {
+              "modelType": "SubmodelElementCollection",
+              "idShort": "Item2",
+              "value": [
+                {
+                  "modelType": "Property",
+                  "idShort": "Name",
+                  "valueType": "xs:string",
+                  "value": "Aluminum Heatsink"
+                },
+                {
+                  "modelType": "Property",
+                  "idShort": "Mass_g",
+                  "valueType": "xs:double",
+                  "value": "22.5"
+                }
+              ]
+            },
+            {
+              "modelType": "SubmodelElementCollection",
+              "idShort": "Item3",
+              "value": [
+                {
+                  "modelType": "Property",
+                  "idShort": "Name",
+                  "valueType": "xs:string",
+                  "value": "Polycarbonate Lens"
+                },
+                {
+                  "modelType": "Property",
+                  "idShort": "Mass_g",
+                  "valueType": "xs:double",
+                  "value": "8.3"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "modelType": "Submodel",
+      "id": "https://basyx.data-container.net/ids/sm/documentation-2025-11-04",
+      "idShort": "Documentation",
+      "kind": "Instance",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://example.org/ids/documentation"
+          }
+        ]
+      },
+      "submodelElements": [
+        {
+          "modelType": "File",
+          "idShort": "UserManual",
+          "contentType": "application/pdf",
+          "value": "https://basyx.data-container.net/files/manual.pdf"
+        },
+        {
+          "modelType": "File",
+          "idShort": "Datasheet",
+          "contentType": "application/pdf",
+          "value": "https://basyx.data-container.net/files/datasheet.pdf"
+        },
+        {
+          "modelType": "Blob",
+          "idShort": "MiniDatasheetBlob",
+          "contentType": "application/pdf",
+          "value": "JVBERi0xLjQKJS4uLm1pbmltYWwuLi4="
+        }
+      ]
+    },
+    {
+      "modelType": "Submodel",
+      "id": "https://basyx.data-container.net/ids/sm/measurements-2025-11-04",
+      "idShort": "Measurements",
+      "kind": "Instance",
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://example.org/ids/measurements"
+          }
+        ]
+      },
+      "submodelElements": [
+        {
+          "modelType": "Property",
+          "idShort": "OnOffState",
+          "valueType": "xs:boolean",
+          "value": "false"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "LastMeasurementAt",
+          "valueType": "xs:dateTime",
+          "value": "2025-11-04T21:59:00Z"
+        },
+        {
+          "modelType": "Property",
+          "idShort": "Voltage",
+          "valueType": "xs:double",
+          "value": "230.0",
+          "qualifiers": [
+            {
+              "type": "unit",
+              "valueType": "xs:string",
+              "value": "V"
+            }
+          ]
+        },
+        {
+          "modelType": "Property",
+          "idShort": "Current",
+          "valueType": "xs:double",
+          "value": "0.05",
+          "qualifiers": [
+            {
+              "type": "unit",
+              "valueType": "xs:string",
+              "value": "A"
+            }
+          ]
+        },
+        {
+          "modelType": "Property",
+          "idShort": "Power",
+          "valueType": "xs:double",
+          "value": "11.5",
+          "qualifiers": [
+            {
+              "type": "unit",
+              "valueType": "xs:string",
+              "value": "W"
+            }
+          ]
+        },
+        {
+          "modelType": "Property",
+          "idShort": "DataEndpoint",
+          "valueType": "xs:anyURI",
+          "value": "https://basyx.data-container.net/api/measurements"
+        }
+      ]
+    }
+  ],
+  "conceptDescriptions": []
+}

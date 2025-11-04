@@ -119,6 +119,12 @@ demonstrating how standardized digital twins can be hosted, managed, and integra
     ```
 
 4.  Connect your AAS instances to physical or simulated assets.
+    Example:
+    ```
+    curl -sS -X POST 'https://basyx.data-container.net/aas-env/upload' \
+         -H 'Accept: application/json' \
+         -F 'file=@aas_demo.json;type=application/json' | jq 
+    ```
 
 ⸻
 

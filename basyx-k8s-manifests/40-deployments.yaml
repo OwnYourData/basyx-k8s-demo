@@ -210,16 +210,18 @@ spec:
                 secretKeyRef:
                   name: basyx-mongo-secret
                   key: MONGO_PASSWORD
-          image: eclipsebasyx/aas-environment:2.0.0-SNAPSHOT
-          env:
+            - name: BASYX_EXTERNALURL
+              value: https://basyx.data-container.net/aas-env
+            - name: SPRING_CONFIG_LOCATION
+              value: /application/config/application.properties
             - name: SERVER_PORT
               value: "8081"
+          image: eclipsebasyx/aas-environment:2.0.0-SNAPSHOT
           ports:
             - containerPort: 8081
           volumeMounts:
             - name: config
-              mountPath: /application/application.properties
-              subPath: application.properties
+              mountPath: /application/config
             - name: aas-data
               mountPath: /application/aas
           readinessProbe:

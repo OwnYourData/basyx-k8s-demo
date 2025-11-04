@@ -14,8 +14,10 @@ data:
     basyx.environment=file:aas/data
     basyx.cors.allowed-origins=*
     basyx.cors.allowed-methods=GET,POST,PATCH,DELETE,PUT,OPTIONS,HEAD
-    basyx.aasrepository.feature.registryintegration=https://basyx.data-container.net/registry
-    basyx.submodelrepository.feature.registryintegration=https://basyx.data-container.net/sm-registry
+    basyx.aasrepository.feature.registryintegration=http://aas-registry.basyx.svc.cluster.local:8080
+    basyx.submodelrepository.feature.registryintegration=http://sm-registry.basyx.svc.cluster.local:8080
+    # basyx.aasrepository.feature.registryintegration=false
+    # basyx.submodelrepository.feature.registryintegration=false
     basyx.externalurl=https://basyx.data-container.net/aas-env
 
     spring.servlet.multipart.max-file-size=500MB
