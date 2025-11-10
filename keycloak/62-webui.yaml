@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basyx-webui
+  namespace: basyx
+  labels:
+    app: basyx-webui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: basyx-webui
+  template:
+    metadata:
+      labels:
+        app: basyx-webui
+    spec:
+      containers:
+        - name: webui
+          image: eclipsebasyx/aas-gui:SNAPSHOT
+          ports:
+            - name: http
+              containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          env:
+            - name: AAS_ENV_PATH
+              value: https://basyx.data-container.net/aas-env
+            - name: AAS_REGISTRY_PATH
+              value: /registry
+            - name: SUBMODEL_REGISTRY_PATH
+              value: /sm-registry
+            - name: DASHBOARD_API_PATH
+              value: https://basyx.data-container.net/dashboard
+            - name: KEYCLOAK_URL
+              value: "https://keycloak.data-container.net"
+            - name: KEYCLOAK_REALM
+              value: "basyx"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "basyx-webui"

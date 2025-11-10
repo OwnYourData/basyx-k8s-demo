@@ -128,6 +128,27 @@ demonstrating how standardized digital twins can be hosted, managed, and integra
 
 ⸻
 
+## 🔑 Step 6 – Enable Keycloak Authorization
+
+Keycloak is an open-source Identity & Access Management (IAM) solution providing OAuth2/OpenID Connect login and role-based access control (RBAC). In this setup, BaSyx services validate JWTs issued by Keycloak and enforce permissions via RBAC rule files mounted from ConfigMaps.
+
+**Apply the manifests**
+The manifests live in /keycloak. From the repository root, run:
+```bash
+kubectl apply -f keycloak/12-configmaps.yaml
+kubectl apply -f keycloak/22-secret.yaml
+kubectl apply -f keycloak/42-deployments.yaml
+kubectl apply -f keycloak/62-webui.yaml
+```
+
+**Credentials (demo)**
+* *Username:* `admin`
+* *Password:* `admin_pwd`
+
+**Known issue (logout)**
+If the Web UI “Logout” button doesn’t work in your environment, use the direct realm logout URL and you’ll be redirected back to the Web UI:
+https://keycloak.data-container.net/realms/basyx/protocol/openid-connect/logout?redirect_uri=https%3A%2F%2Fbasyx.data-container.net
+
 ## About  
 
 <img align="right" src="https://raw.githubusercontent.com/OwnYourData/basyx-k8s-demo/main/res/BMIMI_Logo_srgb.png" height="90">Supported in the course of the [PACE-DPP project](https://dpp-austria.at/) by the Austrian Federal Ministry for Climate Action, Environment, Energy, Mobility, Innovation and Technology (BMK), supported by the Austrian Research Promotion Agency (FFG funded project #917177), as well as from the German Federal Ministry for Economic Affairs and Climate Action (BMWK), supported by the German Research Promotion Agency (DLR-PT).

@@ -1,0 +1,268 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: basyx-rbac-rules
+  namespace: basyx
+data:
+  aasenvironment_rbac.json: |
+    [
+      {
+        "role": "admin",
+        "action": ["CREATE","READ","UPDATE","DELETE","EXECUTE"],
+        "targetInformation": {
+          "@type": "aas-environment",
+          "aasIds": ["*"],
+          "submodelIds": ["*"]
+        }
+      },
+      {
+        "role": "admin",
+        "action": ["CREATE","READ","UPDATE","DELETE","EXECUTE"],
+        "targetInformation": {
+          "@type": "aas",
+          "aasIds": ["*"]
+        }
+      },
+      {
+        "role": "admin",
+        "action": ["CREATE","READ","UPDATE","DELETE","EXECUTE"],
+        "targetInformation": {
+          "@type": "submodel",
+          "submodelIds": ["*"],
+          "submodelElementIdShortPaths": ["*"],
+          "rbacRuleIds": []
+        }
+      },
+      {
+        "role": "admin",
+        "action": ["CREATE","READ","UPDATE","DELETE","EXECUTE"],
+        "targetInformation": {
+          "@type": "concept-description",
+          "conceptDescriptionIds": ["*"]
+        }
+      },
+
+      {
+        "role": "service",
+        "action": ["CREATE","READ"],
+        "targetInformation": {
+          "@type": "aas",
+          "aasIds": ["*"]
+        }
+      },
+      {
+        "role": "service",
+        "action": ["CREATE","READ"],
+        "targetInformation": {
+          "@type": "submodel",
+          "submodelIds": ["*"],
+          "submodelElementIdShortPaths": ["*"],
+          "rbacRuleIds": []
+        }
+      },
+
+      {
+        "role": "info",
+        "action": ["READ"],
+        "targetInformation": {
+          "@type": "aas",
+          "aasIds": ["*"]
+        }
+      },
+      {
+        "role": "info",
+        "action": ["READ"],
+        "targetInformation": {
+          "@type": "submodel",
+          "submodelIds": ["*"],
+          "submodelElementIdShortPaths": ["*"],
+          "rbacRuleIds": []
+        }
+      }
+    ]
+  submodelservice_rbac.json: |
+    [
+      {
+        "role": "admin",
+        "action": ["CREATE","READ","UPDATE","DELETE","EXECUTE"],
+        "targetInformation": {
+          "@type": "submodel",
+          "submodelIds": ["*"],
+          "submodelElementIds": ["*"],
+          "rbacRuleIds": []
+        }
+      },
+      {
+        "role": "service",
+        "action": ["CREATE","READ"],
+        "targetInformation": {
+          "@type": "submodel",
+          "submodelIds": ["*"],
+          "submodelElementIds": ["*"],
+          "rbacRuleIds": []
+        }
+      },
+      {
+        "role": "info",
+        "action": ["READ"],
+        "targetInformation": {
+          "@type": "submodel",
+          "submodelIds": ["*"],
+          "submodelElementIds": ["*"],
+          "rbacRuleIds": []
+        }
+      }
+    ]
+  registry_rbac.json: |
+    [
+      { "role": "admin",   "action": ["CREATE","READ","UPDATE","DELETE"],
+        "targetInformation": { "@type": "aas-registry", "aasIds": "*" } },
+      { "role": "service", "action": ["CREATE","READ"],
+        "targetInformation": { "@type": "aas-registry", "aasIds": "*" } },
+      { "role": "info",    "action": ["READ"],
+        "targetInformation": { "@type": "aas-registry", "aasIds": "*" } }
+    ]
+  smregistry_rbac.json: |
+    [
+      { "role": "admin",   "action": ["CREATE","READ","UPDATE","DELETE"],
+        "targetInformation": { "@type": "submodel-registry", "submodelIds": "*" } },
+      { "role": "service", "action": ["CREATE","READ"],
+        "targetInformation": { "@type": "submodel-registry", "submodelIds": "*" } },
+      { "role": "info",    "action": ["READ"],
+        "targetInformation": { "@type": "submodel-registry", "submodelIds": "*" } }
+    ]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: basyx-aas-env-config
+  namespace: basyx
+data:
+  application.properties: |
+    server.port=8081
+    # Context path & Forwarded headers
+    server.servlet.context-path=/aas-env
+    server.forward-headers-strategy=framework
+
+    basyx.backend=MongoDB
+    basyx.environment=file:aas/data
+    basyx.cors.allowed-origins=*
+    basyx.cors.allowed-methods=GET,POST,PATCH,DELETE,PUT,OPTIONS,HEAD
+    basyx.aasrepository.feature.registryintegration=http://aas-registry.basyx.svc.cluster.local:8080
+    basyx.submodelrepository.feature.registryintegration=http://sm-registry.basyx.svc.cluster.local:8080
+    # basyx.aasrepository.feature.registryintegration=false
+    # basyx.submodelrepository.feature.registryintegration=false
+    basyx.externalurl=https://basyx.data-container.net/aas-env
+
+    # === RBAC / Keycloak ===
+    basyx.aasenvironment.authorization.preconfiguration.enabled=true
+    basyx.aasenvironment.authorization.preconfiguration.token-endpoint=https://keycloak.data-container.net/realms/basyx/protocol/openid-connect/token
+    basyx.aasenvironment.authorization.preconfiguration.grant-type=CLIENT_CREDENTIALS
+    basyx.aasenvironment.authorization.preconfiguration.client-id=basyx-service
+    basyx.aasenvironment.authorization.preconfiguration.client-secret=${CLIENT_SECRET}
+
+    basyx.feature.authorization.enabled=true
+    basyx.feature.authorization.type=rbac
+    basyx.feature.authorization.jwtBearerTokenProvider=keycloak
+    # Datei-Pfad, weil per ConfigMap gemountet:
+    basyx.feature.authorization.rbac.file=file:/application/config/rbac/aasenvironment_rbac.json
+    # Keycloak Realm Issuer:
+    spring.security.oauth2.resourceserver.jwt.issuer-uri=https://keycloak.data-container.net/realms/basyx
+
+    spring.servlet.multipart.max-file-size=500MB
+    spring.servlet.multipart.max-request-size=500MB
+
+    spring.data.mongodb.host=mongo.basyx.svc.cluster.local
+    spring.data.mongodb.database=aas-env
+    spring.data.mongodb.authentication-database=admin
+    spring.data.mongodb.username=${MONGO_USERNAME}
+    spring.data.mongodb.password=${MONGO_PASSWORD}
+
+    # >>> Swagger / OpenAPI korrekt auf Context-Path zeigen
+    springdoc.api-docs.path=/v3/api-docs
+    springdoc.swagger-ui.config-url=/aas-env/v3/api-docs/swagger-config
+
+    logging.level.org.eclipse.digitaltwin.basyx.submodelservice.feature.authorization=DEBUG
+    logging.level.org.eclipse.digitaltwin.basyx.authorization=DEBUG
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: basyx-aas-registry-config
+  namespace: basyx
+data:
+  application.yml: |
+    server:
+      servlet:
+        context-path: /registry
+      forward-headers-strategy: framework
+
+    basyx:
+      cors:
+        allowed-origins: '*'
+        allowed-methods: GET,POST,PATCH,DELETE,PUT,OPTIONS,HEAD
+      feature:
+        authorization:
+          enabled: true
+          type: rbac
+          jwtBearerTokenProvider: keycloak
+          rbac:
+            file: file:/workspace/config/rbac/registry_rbac.json
+
+    spring:
+      data:
+        mongodb:
+          uri: "mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo.basyx.svc.cluster.local:27017/?authSource=admin"
+      security:
+        oauth2:
+          resourceserver:
+            jwt:
+              issuer-uri: https://keycloak.data-container.net/realms/basyx
+
+    # >>> Swagger / OpenAPI korrekt auf Context-Path zeigen
+    springdoc:
+      api-docs:
+        path: /v3/api-docs
+      swagger-ui:
+        config-url: /registry/v3/api-docs/swagger-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: basyx-sm-registry-config
+  namespace: basyx
+data:
+  application.yml: |
+    server:
+      servlet:
+        context-path: /sm-registry
+      forward-headers-strategy: framework
+
+    basyx:
+      feature:
+        authorization:
+          enabled: true
+          type: rbac
+          jwtBearerTokenProvider: keycloak
+          rbac:
+            file: file:/workspace/config/rbac/smregistry_rbac.json
+      cors:
+        allowed-origins: '*'
+        allowed-methods: GET,POST,PATCH,DELETE,PUT,OPTIONS,HEAD
+
+    spring:
+      data:
+        mongodb:
+          uri: "mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo.basyx.svc.cluster.local:27017/?authSource=admin"
+      security:
+        oauth2:
+          resourceserver:
+            jwt:
+              issuer-uri: https://keycloak.data-container.net/realms/basyx
+
+    # >>> Swagger / OpenAPI korrekt auf Context-Path zeigen
+    springdoc:
+      api-docs:
+        path: /v3/api-docs
+      swagger-ui:
+        config-url: /sm-registry/v3/api-docs/swagger-config

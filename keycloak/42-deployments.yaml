@@ -1,0 +1,224 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aas-env
+  namespace: basyx
+  labels:
+    app: aas-env
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aas-env
+  template:
+    metadata:
+      labels:
+        app: aas-env
+    spec:
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        fsGroupChangePolicy: OnRootMismatch
+      initContainers:
+        - name: prepare-aas-dir
+          image: busybox:1.36
+          securityContext:
+            runAsUser: 0
+          command: ["sh","-c","mkdir -p /application/aas/data && chmod 0777 /application/aas/data"]
+          volumeMounts:
+            - name: aas-data
+              mountPath: /application/aas
+      containers:
+        - name: aas-env
+          envFrom:
+            - secretRef:
+                name: basyx-mongo-secret
+            - secretRef:
+                name: basyx-keycloak-secret
+          env:
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: basyx-mongo-secret
+                  key: MONGO_USERNAME
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: basyx-mongo-secret
+                  key: MONGO_PASSWORD
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: basyx-keycloak-secret
+                  key: CLIENT_SECRET
+            - name: BASYX_EXTERNALURL
+              value: https://basyx.data-container.net/aas-env
+            - name: SPRING_CONFIG_LOCATION
+              value: /application/config/application.properties
+            - name: SERVER_PORT
+              value: "8081"
+          image: eclipsebasyx/aas-environment:2.0.0-SNAPSHOT
+          ports:
+            - containerPort: 8081
+          volumeMounts:
+            - name: config
+              mountPath: /application/config
+            - name: aas-data
+              mountPath: /application/aas
+            - name: rbac
+              mountPath: /application/config/rbac
+          livenessProbe:
+            tcpSocket:
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 5
+      volumes:
+        - name: config
+          configMap:
+            name: basyx-aas-env-config
+            items:
+              - key: application.properties
+                path: application.properties
+        - name: aas-data
+          persistentVolumeClaim:
+            claimName: aas-data-pvc
+        - name: rbac
+          configMap:
+            name: basyx-rbac-rules
+            items:
+              - key: aasenvironment_rbac.json
+                path: aasenvironment_rbac.json
+              - key: submodelservice_rbac.json
+                path: submodelservice_rbac.json
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aas-registry
+  namespace: basyx
+  labels:
+    app: aas-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aas-registry
+  template:
+    metadata:
+      labels:
+        app: aas-registry
+    spec:
+      containers:
+        - name: aas-registry
+          env:
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: basyx-mongo-secret
+                  key: MONGO_USERNAME
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: basyx-mongo-secret
+                  key: MONGO_PASSWORD
+          image: eclipsebasyx/aas-registry-log-mongodb:2.0.0-SNAPSHOT
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: config
+              mountPath: /workspace/config/application.yml
+              subPath: application.yml
+            - name: rbac
+              mountPath: /workspace/config/rbac
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 5
+      volumes:
+        - name: config
+          configMap:
+            name: basyx-aas-registry-config
+            items:
+              - key: application.yml
+                path: application.yml
+        - name: rbac
+          configMap:
+            name: basyx-rbac-rules
+            items:
+              - key: registry_rbac.json
+                path: registry_rbac.json
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sm-registry
+  namespace: basyx
+  labels:
+    app: sm-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sm-registry
+  template:
+    metadata:
+      labels:
+        app: sm-registry
+    spec:
+      containers:
+        - name: sm-registry
+          env:
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: basyx-mongo-secret
+                  key: MONGO_USERNAME
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: basyx-mongo-secret
+                  key: MONGO_PASSWORD
+          image: eclipsebasyx/submodel-registry-log-mongodb:2.0.0-SNAPSHOT
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: config
+              mountPath: /workspace/config/application.yml
+              subPath: application.yml
+            - name: rbac
+              mountPath: /workspace/config/rbac
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 5
+      volumes:
+        - name: config
+          configMap:
+            name: basyx-sm-registry-config
+            items:
+              - key: application.yml
+                path: application.yml
+        - name: rbac
+          configMap:
+            name: basyx-rbac-rules
+            items:
+              - key: smregistry_rbac.json
+                path: smregistry_rbac.json
